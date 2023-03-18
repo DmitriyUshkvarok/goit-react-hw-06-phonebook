@@ -1,30 +1,32 @@
 import { useState } from 'react';
 import css from './ContactForm.module.css';
+import { useSelector, useDispatch } from 'react-redux';
+import { addContact, getContacts } from '../../redux/contactsSlice';
+import { nanoid } from 'nanoid';
+import { toast } from 'react-toastify';
 
-function ContactForm({ onSubmit }) {
+function ContactForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
-  const handleGetValue = e => {
-    const prop = e.currentTarget.name;
+  const onChangeName = e => setName(e.currentTarget.value);
+  const onChangeNunber = e => setNumber(e.currentTarget.value);
 
-    switch (prop) {
-      case 'name':
-        setName(e.currentTarget.value);
-        break;
-
-      case 'number':
-        setNumber(e.currentTarget.value);
-        break;
-
-      default:
-        throw new Error();
-    }
-  };
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const handleSubmit = e => {
     e.preventDefault();
-    onSubmit({ name, number });
+    const newElement = { id: nanoid(), name, number };
+
+    contacts.some(contact => contact.name === name)
+      ? toast.error(
+          `${name}`,
+          'This user is already in the contact list.',
+          'OK'
+        )
+      : dispatch(addContact(newElement));
+
     setName('');
     setNumber('');
   };
@@ -38,7 +40,7 @@ function ContactForm({ onSubmit }) {
           <input
             className={css.inputName}
             value={name}
-            onChange={handleGetValue}
+            onChange={onChangeName}
             placeholder="name"
             type="text"
             name="name"
@@ -52,7 +54,7 @@ function ContactForm({ onSubmit }) {
           <input
             className={css.inputNumber}
             value={number}
-            onChange={handleGetValue}
+            onChange={onChangeNunber}
             placeholder="number"
             type="tel"
             name="number"
